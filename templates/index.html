@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gait Analysis</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+      video,
+      canvas {
+        display: block;
+        margin: 10px;
+        max-width: 90%;
+        border: 1px solid #ccc;
+      }
+      #controls {
+        display: flex;
+        justify-content: center;
+        margin: 20px;
+        position: fixed;
+        bottom: 20px; /* Adjust bottom margin as needed */
+        background-color: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        z-index: 1000; /* Ensure controls are on top */
+      }
+      button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+      #gait-data {
+        margin-top: 20px;
+        text-align: center;
+        position: fixed;
+        bottom: 100px; /* Adjust bottom position to avoid overlapping */
+        width: 100%;
+        z-index: 1000; /* Ensure gait data is on top */
+      }
+      .error-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(255, 0, 0, 0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000; /* Ensure error message is on top */
+        display: none; /* Initially hide error message */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gait Analysis</h1>
+    <div class="error-message" id="error-message">
+      Please show your full body to begin.
+    </div>
+    <div>
+      <img id="video-feed" src="/video_feed" alt="Video Feed" />
+    </div>
+    <div id="gait-data">
+      <p id="knee-angle">Knee Angle:</p>
+      <p id="ankle-angle">Ankle Angle:</p>
+      <p id="hip-angle">Hip Angle:</p>
+      <p id="stride-length">Stride Length:</p>
+      <p id="step-length">Step Length:</p>
+      <p id="swing-phase">Swing Phase:</p>
+      <p id="stance-phase">Stance Phase:</p>
+    </div>
+
+    <div id="controls">
+      <!-- <button id="start-button">Start Capture</button> -->
+      <button id="stop-button">Stop Capture</button>
+      <!-- <button id="download-pdf-button">Download PDF</button> -->
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      document.getElementById("start-button").addEventListener("click", () => {
+        socket.emit("start_capture");
+      });
+
+      document.getElementById("stop-button").addEventListener("click", () => {
+        socket.emit("stop_capture");
+      });
+
+      document
+        .getElementById("download-pdf-button")
+        .addEventListener("click", () => {
+          socket.emit("request_pdf");
+        });
+
+      socket.on("gait_data", (data) => {
+        document.getElementById(
+          "knee-angle"
+        ).innerText = `Knee Angle: ${data.knee_angle}`;
+        document.getElementById(
+          "ankle-angle"
+        ).innerText = `Ankle Angle: ${data.ankle_angle}`;
+        document.getElementById(
+          "hip-angle"
+        ).innerText = `Hip Angle: ${data.hip_angle}`;
+        document.getElementById(
+          "stride-length"
+        ).innerText = `Stride Length: ${data.stride_length}`;
+        document.getElementById(
+          "step-length"
+        ).innerText = `Step Length: ${data.step_length}`;
+        document.getElementById(
+          "swing-phase"
+        ).innerText = `Swing Phase: ${data.swing_phase}%`;
+        document.getElementById(
+          "stance-phase"
+        ).innerText = `Stance Phase: ${data.stance_phase}%`;
+      });
+
+      socket.on("pdf_ready", (data) => {
+        const pdfData = `data:application/pdf;base64,${data.pdf_data}`;
+        const link = document.createElement("a");
+        link.href = pdfData;
+        link.download = "gait_analysis_report.pdf";
+        link.click();
+      });
+
+      socket.on("error_message", () => {
+        document.getElementById("error-message").style.display = "block";
+      });
+
+      socket.on("clear_error_message", () => {
+        document.getElementById("error-message").style.display = "none";
+      });
+    </script>
+  </body>
+</html>
