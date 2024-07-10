@@ -1,6 +1,7 @@
-Flask
-Flask-SocketIO
+flask
+flask-socketio
 opencv-python
 mediapipe
 numpy
 reportlab
+moviepy

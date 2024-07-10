@@ -11,133 +11,321 @@
         justify-content: center;
         height: 100vh;
         background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        margin: 0;
       }
-      video,
-      canvas {
-        display: block;
-        margin: 10px;
-        max-width: 90%;
-        border: 1px solid #ccc;
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
       }
-      #controls {
+      .upload-section {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
         margin: 20px;
-        position: fixed;
-        bottom: 20px; /* Adjust bottom margin as needed */
-        background-color: white;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        z-index: 1000; /* Ensure controls are on top */
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
-      button {
-        margin: 0 10px;
-        padding: 10px 20px;
+      .upload-placeholder {
+        width: 300px;
+        height: 200px;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #aaa;
         font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: border-color 0.3s;
       }
-      #gait-data {
-        margin-top: 20px;
-        text-align: center;
-        position: fixed;
-        bottom: 100px; /* Adjust bottom position to avoid overlapping */
-        width: 100%;
-        z-index: 1000; /* Ensure gait data is on top */
+      .upload-placeholder img {
+        max-width: 100%;
+        max-height: 100%;
+        display: none;
       }
-      .error-message {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: rgba(255, 0, 0, 0.8);
-        color: white;
+      .upload-placeholder.dragover {
+        border-color: #333;
+      }
+      #videoInput {
+        display: none;
+      }
+      #uploadButton {
         padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
         border-radius: 5px;
-        z-index: 1000; /* Ensure error message is on top */
-        display: none; /* Initially hide error message */
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      #uploadButton:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      .metrics-section,
+      .graphs-section {
+        margin: 20px;
+        width: 80%;
+      }
+      .graphs-section img {
+        max-width: 100%;
+      }
+      .preview-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        height: 100vh;
+        overflow-y: scroll;
+        background-color: #fff;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .preview-screen video,
+      .preview-screen img {
+        max-width: 100%;
+        margin-bottom: 20px;
+      }
+      .button-section {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 20px;
+      }
+      .button-section button {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .button-section button:hover {
+        background-color: #218838;
+      }
+      .button-section button.clear {
+        background-color: #dc3545;
+      }
+      .button-section button.clear:hover {
+        background-color: #c82333;
+      }
+      .content {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        width: 20%;
+        height: 100%;
+        overflow-y: auto;
+        background-color: #f0f0f0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .main-content {
+        width: 80%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .sidebar img,
+      .sidebar video {
+        max-width: 100%;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.3s;
+      }
+      .sidebar .active {
+        border-color: #007bff;
+      }
+      @media (max-width: 768px) {
+        .content {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          height: auto;
+          flex-direction: row;
+          overflow-x: auto;
+        }
+        .main-content {
+          width: 100%;
+        }
+        .sidebar img,
+        .sidebar video {
+          margin: 0 10px 10px 0;
+        }
       }
     </style>
   </head>
   <body>
     <h1>Gait Analysis</h1>
-    <div class="error-message" id="error-message">
-      Please show your full body to begin.
+    <div class="upload-section">
+      <label class="upload-placeholder" id="uploadPlaceholder">
+        <span>Click to upload a video</span>
+        <input type="file" id="videoInput" accept="video/*" />
+      </label>
+      <button id="uploadButton" disabled>Upload Video</button>
     </div>
-    <div>
-      <img id="video-feed" src="/video_feed" alt="Video Feed" />
-    </div>
-    <div id="gait-data">
-      <p id="knee-angle">Knee Angle:</p>
-      <p id="ankle-angle">Ankle Angle:</p>
-      <p id="hip-angle">Hip Angle:</p>
-      <p id="stride-length">Stride Length:</p>
-      <p id="step-length">Step Length:</p>
-      <p id="swing-phase">Swing Phase:</p>
-      <p id="stance-phase">Stance Phase:</p>
-    </div>
+    <div class="metrics-section" id="metrics-section"></div>
+    <div class="graphs-section" id="graphs-section"></div>
 
-    <div id="controls">
-      <!-- <button id="start-button">Start Capture</button> -->
-      <button id="stop-button">Stop Capture</button>
-      <!-- <button id="download-pdf-button">Download PDF</button> -->
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-      const socket = io();
+      const videoInput = document.getElementById("videoInput");
+      const uploadButton = document.getElementById("uploadButton");
+      const uploadPlaceholder = document.getElementById("uploadPlaceholder");
 
-      document.getElementById("start-button").addEventListener("click", () => {
-        socket.emit("start_capture");
+      uploadPlaceholder.addEventListener("click", () => {
+        videoInput.click();
       });
 
-      document.getElementById("stop-button").addEventListener("click", () => {
-        socket.emit("stop_capture");
+      videoInput.addEventListener("change", () => {
+        if (videoInput.files.length > 0) {
+          uploadButton.disabled = false;
+          uploadPlaceholder.innerHTML = `<span>${videoInput.files[0].name}</span>`;
+        } else {
+          uploadButton.disabled = true;
+          uploadPlaceholder.innerHTML = "<span>Click to upload a video</span>";
+        }
       });
 
-      document
-        .getElementById("download-pdf-button")
-        .addEventListener("click", () => {
-          socket.emit("request_pdf");
-        });
+      uploadButton.addEventListener("click", () => {
+        const formData = new FormData();
+        formData.append("video", videoInput.files[0]);
 
-      socket.on("gait_data", (data) => {
-        document.getElementById(
-          "knee-angle"
-        ).innerText = `Knee Angle: ${data.knee_angle}`;
-        document.getElementById(
-          "ankle-angle"
-        ).innerText = `Ankle Angle: ${data.ankle_angle}`;
-        document.getElementById(
-          "hip-angle"
-        ).innerText = `Hip Angle: ${data.hip_angle}`;
-        document.getElementById(
-          "stride-length"
-        ).innerText = `Stride Length: ${data.stride_length}`;
-        document.getElementById(
-          "step-length"
-        ).innerText = `Step Length: ${data.step_length}`;
-        document.getElementById(
-          "swing-phase"
-        ).innerText = `Swing Phase: ${data.swing_phase}%`;
-        document.getElementById(
-          "stance-phase"
-        ).innerText = `Stance Phase: ${data.stance_phase}%`;
+        uploadButton.disabled = true;
+        uploadButton.textContent = "Processing...";
+
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Create preview screen
+            const previewScreen = document.createElement("div");
+            previewScreen.classList.add("preview-screen");
+
+            const content = document.createElement("div");
+            content.classList.add("content");
+
+            const sidebar = document.createElement("div");
+            sidebar.classList.add("sidebar");
+
+            const mainContent = document.createElement("div");
+            mainContent.classList.add("main-content");
+
+            // Output video
+            const videoContainer = document.createElement("div");
+            const video = document.createElement("video");
+            video.src = data.output_video;
+            video.controls = true;
+            video.classList.add("active");
+            videoContainer.classList.add("active");
+            videoContainer.appendChild(video);
+            mainContent.appendChild(videoContainer);
+
+            videoContainer.addEventListener("click", () => {
+              alert("clicked");
+              const videoInner = document.createElement("video");
+              videoInner.src = data.output_video;
+              videoInner.controls = true;
+              mainContent.innerHTML = "";
+              const activeElement = sidebar.querySelector(".active");
+              if (activeElement) activeElement.classList.remove("active");
+              video.classList.add("active");
+              videoContainer.classList.add("active");
+              mainContent.appendChild(videoInner);
+            });
+
+            sidebar.appendChild(video.cloneNode(true));
+
+            // Graph images
+            for (const [key, src] of Object.entries(data.graphs)) {
+              const img = document.createElement("img");
+              img.src = src;
+              img.addEventListener("click", () => {
+                mainContent.innerHTML = `<img src="${src}" alt="${key}">`;
+                const activeElement = sidebar.querySelector(".active");
+                if (activeElement) activeElement.classList.remove("active");
+                img.classList.add("active");
+              });
+              sidebar.appendChild(img);
+            }
+
+            // Append elements to the preview screen
+            content.appendChild(sidebar);
+            content.appendChild(mainContent);
+            previewScreen.appendChild(content);
+
+            // Save and clear buttons
+            const buttonSection = document.createElement("div");
+            buttonSection.classList.add("button-section");
+
+            const saveButton = document.createElement("button");
+            saveButton.textContent = "Save";
+            saveButton.addEventListener("click", () => {
+              // Implement save functionality
+            });
+
+            const clearButton = document.createElement("button");
+            clearButton.textContent = "Clear";
+            clearButton.classList.add("clear");
+            clearButton.addEventListener("click", () => {
+              // Implement clear functionality
+              location.reload();
+            });
+
+            buttonSection.appendChild(saveButton);
+            buttonSection.appendChild(clearButton);
+            previewScreen.appendChild(buttonSection);
+
+            // Replace body content with preview screen
+            document.body.innerHTML = "";
+            document.body.appendChild(previewScreen);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            uploadButton.disabled = false;
+            uploadButton.textContent = "Upload Video";
+          });
       });
 
-      socket.on("pdf_ready", (data) => {
-        const pdfData = `data:application/pdf;base64,${data.pdf_data}`;
-        const link = document.createElement("a");
-        link.href = pdfData;
-        link.download = "gait_analysis_report.pdf";
-        link.click();
+      // Drag and drop functionality
+      uploadPlaceholder.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadPlaceholder.classList.add("dragover");
       });
 
-      socket.on("error_message", () => {
-        document.getElementById("error-message").style.display = "block";
+      uploadPlaceholder.addEventListener("dragleave", () => {
+        uploadPlaceholder.classList.remove("dragover");
       });
 
-      socket.on("clear_error_message", () => {
-        document.getElementById("error-message").style.display = "none";
+      uploadPlaceholder.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadPlaceholder.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) {
+          videoInput.files = e.dataTransfer.files;
+          videoInput.dispatchEvent(new Event("change"));
+        }
       });
     </script>
   </body>
